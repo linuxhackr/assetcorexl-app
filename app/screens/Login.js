@@ -1,15 +1,37 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Colors, Incubator, Text, View, Button, Picker, Dialog, PanningProvider} from "react-native-ui-lib";
 import chevronDown from "../../assets/icons/chevronDown.png";
-import {ScrollView} from "react-native";
+import {ScrollView, ImageBackground} from "react-native";
+import axios from "axios";
+import {useDispatch} from "react-redux";
+import {login} from "../store/authSlice";
 
 const {TextField} = Incubator;
 
 const COLOR_MAIN = "#eb8034"
 
 
-
 const Login = ({navigation}) => {
+
+  const dispatch = useDispatch()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [site, setSite] = useState(null)
+  const [sites, setSites] = useState([])
+
+  useEffect(
+    ()=>{
+      axios.get('sites', {params:{email}})
+        .then(res=>{
+          if(res.data.sites) setSites(res.data.sites); else setSites([]);
+        })
+    },[email]
+  )
+
+  useEffect(()=>{
+    setSite(null)
+  }, [sites])
 
   const dialogHeader = props => {
     const {title} = props;
@@ -19,6 +41,10 @@ const Login = ({navigation}) => {
       </Text>
     );
   };
+
+  const handleLogin = () => {
+    dispatch(login({email,password,site:site.value}))
+  }
 
   const renderDialog = modalProps => {
     const {visible, children, toggleModal, onDone} = modalProps;
@@ -45,57 +71,66 @@ const Login = ({navigation}) => {
   };
 
   return (
-    <View col padding-16 margin-16 backgroundColor={'#fff'}>
-      <Text text30>Login</Text>
-      <TextField
-        label="Username"
-        labelColor={{default: COLOR_MAIN}}
-        placeholder="Enter username"
-        validateOnChange
-        labelStyle={{
-          fontWeight: 'bold'
-        }}
-        fieldStyle={{
-          borderWidth: 1,
-          borderColor: Colors.grey60,
-          padding: 8,
-          marginTop: 4,
-          borderRadius: 0
-        }}
-        containerStyle={{marginTop: 8}}
-      />
-      <TextField
-        label="Password"
-        labelColor={{default: COLOR_MAIN}}
-        placeholder="Enter password"
-        validateOnChange
-        labelStyle={{
-          fontWeight: 'bold'
-        }}
-        fieldStyle={{
-          borderWidth: 1,
-          borderColor: Colors.grey60,
-          padding: 8,
-          marginTop: 4,
-          borderRadius: 0
-        }}
-        containerStyle={{marginTop: 8}}
-      />
-      <Text color={COLOR_MAIN} style={{fontWeight: 'bold'}} marginT-10>Select Site</Text>
+      <View col padding-16 margin-16 backgroundColor={'#fff'}>
 
-      <Picker
-        value={1}
-        renderCustomModal={renderDialog}
-        rightIconSource={chevronDown}
+        <Text text30>Login</Text>
+        <TextField
+          label="Username"
+          labelColor={{default: COLOR_MAIN}}
+          placeholder="Enter username"
+          validateOnChange
+          labelStyle={{
+            fontWeight: 'bold'
+          }}
+          fieldStyle={{
+            borderWidth: 1,
+            borderColor: Colors.grey60,
+            padding: 8,
+            marginTop: 4,
+            borderRadius: 0
+          }}
+          containerStyle={{marginTop: 8}}
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextField
+          label="Password"
+          labelColor={{default: COLOR_MAIN}}
+          placeholder="Enter password"
+          validateOnChange
+          labelStyle={{
+            fontWeight: 'bold'
+          }}
+          fieldStyle={{
+            borderWidth: 1,
+            borderColor: Colors.grey60,
+            padding: 8,
+            marginTop: 4,
+            borderRadius: 0
+          }}
+          containerStyle={{marginTop: 8}}
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      >
-        <Picker.Item label={"Site A"} value={1}/>
-        <Picker.Item label={"Site B"} value={2}/>
-      </Picker>
+        {sites.length > 0 && (
+          <View>
+            <Text color={COLOR_MAIN} style={{fontWeight: 'bold'}} marginT-10>Select Site</Text>
 
-
-      <Button onPress={()=>navigation.push('BottomTab')} label='Log In' backgroundColor={COLOR_MAIN} marginT-10/>
-    </View>
+            <Picker
+            value={site}
+            renderCustomModal={renderDialog}
+            rightIconSource={chevronDown}
+            onChange={setSite}
+          >
+              {sites.map(site=>(
+                <Picker.Item label={site.name} value={site.id}/>
+              ))}
+          </Picker>
+          </View>
+        )}
+        <Button disabled={!(email && password && site)} onPress={handleLogin} label='Log In' backgroundColor={COLOR_MAIN} marginT-10/>
+      </View>
   )
 }
 

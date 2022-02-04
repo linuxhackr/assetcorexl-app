@@ -12,11 +12,13 @@ import {BlurView} from 'expo-blur';
 import {FontAwesome5, Ionicons} from '@expo/vector-icons';
 import {FontAwesome} from '@expo/vector-icons';
 import {StyleSheet} from "react-native";
+import {useSelector} from "react-redux";
+import FlashMessage from "react-native-flash-message";
 
 const HeaderLeft = () => {
   return (
     <View paddingB={8} style={{height: 64}} center>
-      <Image style={{height: 56, width: 170}} cover={false} assetGroup='images' assetName={'name_logo'}/>
+      <Image style={{height: 56, width: 190}} cover={false} assetGroup='images' assetName={'name_logo'}/>
     </View>
   )
 }
@@ -30,6 +32,7 @@ const HeaderRight = () => {
 
 
 const CoreStack = createNativeStackNavigator();
+const AuthStack = createNativeStackNavigator();
 
 const BottomTab = createBottomTabNavigator();
 
@@ -77,7 +80,7 @@ const BottomTabScreen = () => (
 
 
 const CoreStackScreen = () => (
-  <CoreStack.Navigator initialRouteName='Login'>
+  <CoreStack.Navigator>
     <CoreStack.Screen
       name="BottomTab"
       component={BottomTabScreen}
@@ -88,7 +91,12 @@ const CoreStackScreen = () => (
         headerRight: () => <HeaderRight/>,
       }}
     />
-    <CoreStack.Screen
+    {/*<CoreStack.Screen name="Camera" component={Login} />*/}
+  </CoreStack.Navigator>
+)
+const AuthStackScreen = () => (
+  <AuthStack.Navigator initialRouteName='Login'>
+    <AuthStack.Screen
       name="Login" component={Login}
       options={{
         headerShadowVisible: false,
@@ -98,13 +106,22 @@ const CoreStackScreen = () => (
 
     />
     {/*<CoreStack.Screen name="Camera" component={Login} />*/}
-  </CoreStack.Navigator>
+  </AuthStack.Navigator>
 )
 
 const Router = () => {
+  const {user} = useSelector(({auth}) => auth)
   return (
     <NavigationContainer>
-      <CoreStackScreen/>
+      <FlashMessage
+        style={{
+          margin: 0,
+          paddingTop: 20,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        icon='auto' titleStyle={{fontSize: 16}} position='top'/>
+      {user===null ? <AuthStackScreen/>:<CoreStackScreen/>}
     </NavigationContainer>
   )
 }
