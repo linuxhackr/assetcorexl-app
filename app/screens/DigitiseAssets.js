@@ -13,7 +13,7 @@ import {getSystems, selectSystems} from "../store/systemsSlice";
 import {getLocations, selectLocations} from "../store/locationsSlice";
 import store from "../store";
 import {selectAssetTypes} from "../store/assetTypesSlice";
-import {getAssets, selectAssets} from "../store/assetsSlice";
+import {getAssets, selectAssets, updateAsset} from "../store/assetsSlice";
 
 const {TextField} = Incubator;
 
@@ -40,6 +40,7 @@ const DigitiseAssets = () => {
 
 
   useEffect(() => {
+    console.log(store.getState().auth)
     dispatch(getSystems({site}))
     dispatch(getAssetTypes())
   }, [])
@@ -55,18 +56,41 @@ const DigitiseAssets = () => {
   useEffect(() => {
     if (location) {
       const locationObj = store.getState().locations.byId[location.value]
-      console.log({site, locationId: locationObj.id, locationAsset: locationObj.asset})
       dispatch(getAssets({site, locationId: locationObj.id, locationAsset: locationObj.asset}))
     }
     setAsset(null)
   }, [location])
 
   useEffect(() => {
-    // todo set assetType,comment,image, parameters
-    setAssetType(null)
-    setComment(null)
-    setImage(null)
+    if(asset) {
+      const assetObj = store.getState().assets.byId[asset.value]
+      const ast = assetTypes[_.findIndex(assetTypes, item=>item.name===assetObj.type)]
+      setAssetType(ast?.id)
+      setComment(assetObj.comments)
+
+      const params = []
+      _.forEach(assetObj.parameters, item=>{
+        setParameters(params.concat({
+          'label':item.name,
+          'value':''
+        }))
+
+      })
+
+    } else {
+      setAssetType(null);
+      setComment("")
+      setParameters([])
+    }
   }, [asset])
+
+  console.log(parameters)
+
+
+
+  const handleUpdate = () => {
+    dispatch(updateAsset({assetId:asset.value, comment, typeName:store.getState().assetTypes?.byId?.[assetType]?.name}))
+  }
 
 
   return (
@@ -150,22 +174,25 @@ const DigitiseAssets = () => {
                 multiline
                 fieldStyle={styles.fieldStyle}
                 style={{height: 48, textAlign: 'left', textAlignVertical: 'top', paddingTop: 0}}
+                value={comment}
+                onChangeText={setComment}
               />
               <View row style={{marginVertical: 16}}>
-                <Button marginB={16} label='Add Photo' outline size={"small"} outlineColor={COLOR_MAIN}/>
+              {/*  <Button marginB={16} label='Add Photo' outline size={"small"} outlineColor={COLOR_MAIN}/>*/}
               </View>
 
-              <Button label='Save Asset' outlineWidth backgroundColor={COLOR_MAIN}/>
+              <Button onPress={handleUpdate} disabled={!(asset)} label='Save Asset' outlineWidth backgroundColor={COLOR_MAIN}/>
 
 
             </View>
           </Tabs.ScrollView>
         </Tabs.Tab>
-        <Tabs.Tab label='Patameters' name="Parameters">
+        <Tabs.Tab label='Parameters' name="Parameters">
           <Tabs.ScrollView>
             <View padding={12} borderRadius={8}>
               {parameters.map(parameter => (
                 <TextField
+                  key={parameter.label}
                   label={parameter.label}
                   labelColor={{default: COLOR_MAIN}}
                   placeholder={`Enter ${parameter.label}`}

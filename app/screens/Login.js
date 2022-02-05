@@ -30,7 +30,11 @@ const Login = ({navigation}) => {
   )
 
   useEffect(()=>{
-    setSite(null)
+    if(sites.length>0){
+      setSite(sites[0].id)
+    } else {
+      setSite(null)
+    }
   }, [sites])
 
   const dialogHeader = props => {
@@ -43,7 +47,8 @@ const Login = ({navigation}) => {
   };
 
   const handleLogin = () => {
-    dispatch(login({email,password,site:site.value}))
+    console.log({email,password,site:site})
+    dispatch(login({email,password,site:site}))
   }
 
   const renderDialog = modalProps => {
@@ -113,7 +118,7 @@ const Login = ({navigation}) => {
           onChangeText={setPassword}
         />
 
-        {sites.length > 0 && (
+        {sites.length > 1 && (
           <View>
             <Text color={COLOR_MAIN} style={{fontWeight: 'bold'}} marginT-10>Select Site</Text>
 

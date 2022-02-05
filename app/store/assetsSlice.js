@@ -5,6 +5,7 @@ import {denormalize, normalize} from "normalizr";
 import {asset, location} from "../api/schemas";
 import _ from "lodash";
 import {getLocations} from "./locationsSlice";
+import thunk from "redux-thunk";
 
 export const getAssets = createAsyncThunk(
   'assets/getAssets',
@@ -13,6 +14,15 @@ export const getAssets = createAsyncThunk(
       const {assets} = res.data;
       const {entities, result} = normalize(assets, [asset])
       return thunkAPI.fulfillWithValue({assets: entities.assets, assetIds: result})
+    })
+)
+
+export const updateAsset = createAsyncThunk(
+  'assets/updateAsset',
+  ({assetId, typeName, comment, imageName}, thunkAPI) => axios.put(`assets/${assetId}`, {typeName, comment, imageName})
+    .then(res=>{
+      const {entities, result} = normalize(res.data, asset)
+      return thunkAPI.fulfillWithValue({assets: entities.assets})
     })
 )
 
@@ -36,6 +46,10 @@ const assetsSlice = createSlice({
       state.locations[locationId] = {
         ids: assetIds
       }
+    },
+    [updateAsset.fulfilled]:(state, action) => {
+      const {assets} = action.payload;
+      state.byId = _.merge(state.byId, assets);
     }
   }
 })

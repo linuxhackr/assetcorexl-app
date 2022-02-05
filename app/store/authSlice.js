@@ -45,7 +45,7 @@ const authSlice = createSlice({
   },
   extraReducers: {
     [login.fulfilled]: (state, action) => {
-      const {user, systems} = action.payload;
+      const {user} = action.payload;
       const {email, password, site} = action.meta.arg;
       state.email = email
       state.password = password
