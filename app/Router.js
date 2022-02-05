@@ -12,8 +12,9 @@ import {BlurView} from 'expo-blur';
 import {FontAwesome5, Ionicons} from '@expo/vector-icons';
 import {FontAwesome} from '@expo/vector-icons';
 import {StyleSheet} from "react-native";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import FlashMessage from "react-native-flash-message";
+import {logout} from "./store/authSlice";
 
 const HeaderLeft = () => {
   return (

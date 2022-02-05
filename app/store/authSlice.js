@@ -1,26 +1,21 @@
 import {createAsyncThunk} from "@reduxjs/toolkit/src/createAsyncThunk";
 import axios from "axios";
-import {createSlice} from "@reduxjs/toolkit";
+import {createSelector, createSlice} from "@reduxjs/toolkit";
 import {showFlashMessage} from "../api/helper";
-import {showMessage} from "react-native-flash-message";
 
 export const login = createAsyncThunk(
   'auth/login',
   ({email, password, site}, thunkAPI) => {
-    return axios.post('login', {email,password,site})
+    return axios.post('login', {email, password, site})
       .then(({data}) => {
         const {user, systems} = data
-        return thunkAPI.fulfillWithValue({user, systems, site})
+        return thunkAPI.fulfillWithValue({user, systems})
       })
       .catch(err => {
-        console.log(err.response.data)
-        showMessage({
-          message: 'message'
-          // type: type,
-          // position: position,
-          // backgroundColor: type === "error" ? '#ff4f89' : '#19d0b4'
+        thunkAPI.dispatch({
+          type: 'auth/logout'
         })
-        // showFlashMessage({message: err?.response?.data?.message??'Invalid Credentials', type: 'error'})
+        showFlashMessage({message: err?.response?.data?.message ?? 'Invalid Credentials', type: 'error'})
         return thunkAPI.rejectWithValue({})
       })
   }
@@ -32,11 +27,9 @@ export const logout = () => ({
 
 const initialState = {
   user: null,
-  username: null,
   email: null,
+  password: null,
   site: null,
-  loading: false,
-  systems: []
 }
 
 const authSlice = createSlice({
@@ -44,30 +37,25 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state, action) => {
+      state.email = null
+      state.password = null
+      state.site = null
       state.user = null
-      state.systems = []
     }
   },
   extraReducers: {
-    [login.pending]: (state, action) => {
-      state.loading = true
-    },
     [login.fulfilled]: (state, action) => {
-      const {user, systems, site} = action.payload;
-      console.log(user,systems,site)
-      state.user = user
+      const {user, systems} = action.payload;
+      const {email, password, site} = action.meta.arg;
+      state.email = email
+      state.password = password
       state.site = site
-      state.systems = systems
-      state.loading = false
-    },
-    [login.rejected]: (state, action) => {
-      state.loading = false
+      state.user = user
     },
   }
 })
 
 export default authSlice.reducer;
-
 
 
 /*

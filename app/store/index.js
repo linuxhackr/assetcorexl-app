@@ -1,7 +1,12 @@
 import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { persistReducer } from 'redux-persist'
+import {persistReducer} from 'redux-persist'
 import auth from './authSlice'
+import assetTypes from './assetTypesSlice'
+import assets from './assetsSlice'
+import systems from './systemsSlice'
+import locations from './locationsSlice'
+
 const middlewares = []
 
 const persistConfig = {
@@ -10,12 +15,18 @@ const persistConfig = {
 };
 
 
-
 const createReducer = asyncReducers => (state, action) => {
   const combinedReducer = combineReducers({
     auth,
+    assetTypes,
+    systems,
+    assets,
+    locations,
     ...asyncReducers
   });
+  if (action.type === 'auth/logout') {
+    state = undefined;
+  }
   return combinedReducer(state, action);
 };
 
