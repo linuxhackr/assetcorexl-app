@@ -138,7 +138,7 @@ const Router = () => {
     if (isConnected && lastPendingTask) {
         if (lastPendingTask.type === 'auth/login') {
           dispatch(login({...lastPendingTask.payload, taskId: lastPendingTask.id}))
-        } else if (lastPendingTask.type === 'assets/getAssets') {
+        } else if (lastPendingTask.type === 'assets/updateAsset') {
           dispatch(updateAsset({...lastPendingTask.payload, taskId: lastPendingTask.id}))
         }
     }

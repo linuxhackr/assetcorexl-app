@@ -18,16 +18,13 @@ const Dashboard = () => {
     ()=>{
       dispatch(getAssetTypes())
       dispatch(getSystems({site}))
-    },[]
+    },[site]
   )
 
   return (
     <ScrollView row center padding={24}>
-      <Text style={{fontSize:16, color:"rgba(0,0,0,0.37)"}}>Hi, {user.fname} {user.lname} {numTasks}</Text>
-      <Button onPress={()=>dispatch(logout())} label='Log out' outline size={"xSmall"}/>
-      {_.compact(tasks).map(task=>(
-        <Text>{task.id} {task.type}</Text>
-      ))}
+      <Text style={{fontSize:16, color:"rgba(0,0,0,0.37)"}}>Hi, {user.fname} {user.lname}</Text>
+      <Text onPress={()=>dispatch(logout())} style={{color:'#0077cc'}}>Log out</Text>
     </ScrollView>
   )
 }

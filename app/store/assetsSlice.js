@@ -42,7 +42,7 @@ export const updateAsset = createAsyncThunk(
           type: 'tasks/add',
           payload: {
             id: nanoid(),
-            type: 'assets/getAssets',
+            type: 'assets/updateAsset',
             payload: {assetId, typeName, comment, imageName}
           }
         })
