@@ -19,6 +19,7 @@ import * as NetInfo from "@react-native-community/netinfo";
 import {selectLastPendingTask, selectTasks} from "./store/tasksSlice";
 import _ from "lodash";
 import {getAssets, updateAsset} from "./store/assetsSlice";
+import {navigationRef} from "./api/helper";
 
 const HeaderLeft = () => {
   return (
@@ -64,7 +65,6 @@ const BottomTabScreen = () => (
       tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
 
     }}
-    initialRouteName='DigitiseAssets'
   >
     <BottomTab.Screen name="Dashboard" component={Dashboard} options={{
       headerShown: false,
@@ -133,6 +133,7 @@ const Router = () => {
     }
   }, [])
 
+  // execute pending tasks one-by-one
   useEffect(() => {
     if (isConnected && lastPendingTask) {
         if (lastPendingTask.type === 'auth/login') {
@@ -148,32 +149,21 @@ const Router = () => {
     dispatch(autoLogin())
   }, [])
 
-
-  // execute pending tasks when internet comes
-  // NetInfo.fetch().then((state) => {
-  //   if(state.isConnected) {
-  //     const pendingTasks = useSelector(selectTasks)
-  //     _.forEach(pendingTasks, task=>{
-  //       if(task.type==='auth/login'){
-  //         dispatch(login(task.payload))
-  //       }
-  //     })
-  //   }
-  //
-  // })
-
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
+      {user === null ? <AuthStackScreen/> : <CoreStackScreen/>}
+      <View backgroundColor={isConnected ? '#0ab600' : '#ff1f5a'} height={2}/>
       <FlashMessage
         style={{
           margin: 0,
-          paddingTop: 20,
+          paddingTop: 60,
           alignItems: 'center',
           justifyContent: 'center'
         }}
-        icon='auto' titleStyle={{fontSize: 16}} position='top'/>
-      {user === null ? <AuthStackScreen/> : <CoreStackScreen/>}
-      <View backgroundColor={isConnected ? '#0077cc' : '#ff4646'} height={5}/>
+        floating={false}
+        icon="auto"
+        titleStyle={{ fontSize: 16 }}
+        position="top"/>
     </NavigationContainer>
   )
 }

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {StyleSheet, ListRenderItem, Keyboard} from 'react-native'
-import {Dialog, Picker, View, Colors, Text, PanningProvider, Incubator, Button} from 'react-native-ui-lib'
+import {Dialog, Picker, View, Colors, Text, PanningProvider, Incubator, Button, LoaderScreen} from 'react-native-ui-lib'
 import {MaterialTabBar, Tabs} from 'react-native-collapsible-tab-view'
 import PickerItem from "react-native-web/dist/exports/Picker/PickerItem";
 import {ScrollView} from 'react-native';
@@ -38,11 +38,11 @@ const DigitiseAssets = () => {
   const [image, setImage] = useState(null)
   const [parameters, setParameters] = useState([])
 
+  const [loading, setLoading] = useState(false)
+
+
 
   useEffect(() => {
-    console.log(store.getState().auth)
-    dispatch(getSystems({site}))
-    dispatch(getAssetTypes())
   }, [])
 
   useEffect(() => {
@@ -65,16 +65,16 @@ const DigitiseAssets = () => {
     if(asset) {
       const assetObj = store.getState().assets.byId[asset.value]
       const ast = assetTypes[_.findIndex(assetTypes, item=>item.name===assetObj.type)]
-      console.log(assetObj, ast)
       setAssetType(ast?.id)
       setComment(assetObj.comments)
 
       let params = []
       _.forEach(assetObj.parameters, item=>{
-        setParameters(params.concat({
+        params = params.concat({
           'label':item.name,
           'value':''
-        }))
+        })
+        setParameters(params)
 
       })
 
@@ -89,7 +89,11 @@ const DigitiseAssets = () => {
 
 
   const handleUpdate = () => {
+    setLoading(true)
     dispatch(updateAsset({assetId:asset.value, comment, typeName:store.getState().assetTypes?.byId?.[assetType]?.name}))
+      .then(Res=>{
+        setLoading(false)
+      })
   }
 
 
@@ -209,6 +213,7 @@ const DigitiseAssets = () => {
           </Tabs.ScrollView>
         </Tabs.Tab>
       </Tabs.Container>
+      {loading && <LoaderScreen color={COLOR_MAIN} message="Loading..." overlay backgroundColor={"rgba(255,255,255,0.6)"}/>}
 
     </View>
   )

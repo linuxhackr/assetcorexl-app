@@ -8,7 +8,7 @@ export const navigate = (name, params) => {
   navigationRef.current?.navigate(name, params);
 }
 
-export const showFlashMessage = ({message, type = "info", position = "bottom"}) => showMessage({
+export const showFlashMessage = ({message, type = "info", position = "top"}) => showMessage({
   message: message,
   type: type,
   position: position,

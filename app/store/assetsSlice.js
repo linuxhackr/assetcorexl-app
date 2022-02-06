@@ -7,6 +7,7 @@ import _ from "lodash";
 import {getLocations} from "./locationsSlice";
 import thunk from "redux-thunk";
 import {nanoid} from "nanoid/non-secure";
+import {showFlashMessage} from "../api/helper";
 
 export const getAssets = createAsyncThunk(
   'assets/getAssets',
@@ -29,8 +30,9 @@ export const updateAsset = createAsyncThunk(
           type:'tasks/remove',
           payload:taskId
         })
+      } else {
+        showFlashMessage({message: `Asset ${entities.assets[assetId].name} updated`, type: 'success'})
       }
-
 
       return thunkAPI.fulfillWithValue({assets: entities.assets})
 
@@ -44,6 +46,8 @@ export const updateAsset = createAsyncThunk(
             payload: {assetId, typeName, comment, imageName}
           }
         })
+        showFlashMessage({message: `No internet, Added to queue!`, type: 'info'})
+
         return thunkAPI.rejectWithValue({})
       }
 

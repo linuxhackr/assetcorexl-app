@@ -1,5 +1,15 @@
 import React, {useEffect, useState} from "react";
-import {Colors, Incubator, Text, View, Button, Picker, Dialog, PanningProvider} from "react-native-ui-lib";
+import {
+  Colors,
+  Incubator,
+  Text,
+  View,
+  Button,
+  Picker,
+  Dialog,
+  PanningProvider,
+  LoaderScreen
+} from "react-native-ui-lib";
 import chevronDown from "../../assets/icons/chevronDown.png";
 import {ScrollView, ImageBackground} from "react-native";
 import axios from "axios";
@@ -14,6 +24,8 @@ const COLOR_MAIN = "#eb8034"
 const Login = ({navigation}) => {
 
   const dispatch = useDispatch()
+
+  const [loading, setLoading] = useState(false)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,8 +59,11 @@ const Login = ({navigation}) => {
   };
 
   const handleLogin = () => {
-    console.log({email,password,site:site})
+    setLoading(true)
     dispatch(login({email,password,site:site}))
+      .then(res=>{
+        setLoading(false)
+      })
   }
 
   const renderDialog = modalProps => {
@@ -140,6 +155,7 @@ const Login = ({navigation}) => {
         )}
         <Button disabled={!(email && password && site)} onPress={handleLogin} label='Log In' backgroundColor={COLOR_MAIN} marginT-10/>
     </View>
+        {loading && <LoaderScreen color={COLOR_MAIN} message="Loading..." overlay backgroundColor={"rgba(255,255,255,0.6)"}/>}
 </ImageBackground>
 
   )

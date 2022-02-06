@@ -1,7 +1,7 @@
 import {createAsyncThunk} from "@reduxjs/toolkit/src/createAsyncThunk";
 import axios from "axios";
 import {createSelector, createSlice} from "@reduxjs/toolkit";
-import {isConnected, showFlashMessage} from "../api/helper";
+import {showFlashMessage} from "../api/helper";
 import * as NetInfo from "@react-native-community/netinfo";
 import {nanoid} from "nanoid/non-secure";
 
@@ -17,6 +17,8 @@ export const login = createAsyncThunk(
             payload:taskId
           })
         }
+        showFlashMessage({message: 'Login Success', type: 'success'})
+
         return thunkAPI.fulfillWithValue({user})
       })
       .catch(err => {
