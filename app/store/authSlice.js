@@ -1,23 +1,51 @@
 import {createAsyncThunk} from "@reduxjs/toolkit/src/createAsyncThunk";
 import axios from "axios";
 import {createSelector, createSlice} from "@reduxjs/toolkit";
-import {showFlashMessage} from "../api/helper";
+import {isConnected, showFlashMessage} from "../api/helper";
+import * as NetInfo from "@react-native-community/netinfo";
+import {nanoid} from "nanoid/non-secure";
 
 export const login = createAsyncThunk(
   'auth/login',
-  ({email, password, site}, thunkAPI) => {
+  ({email, password, site, taskId=undefined}, thunkAPI) => {
     return axios.post('login', {email, password, site})
       .then(({data}) => {
-        const {user, systems} = data
-        return thunkAPI.fulfillWithValue({user, systems})
+        const {user} = data
+        if(taskId){
+          thunkAPI.dispatch({
+            type:'tasks/remove',
+            payload:taskId
+          })
+        }
+        return thunkAPI.fulfillWithValue({user})
       })
       .catch(err => {
+        console.log(err.response)
+        if (!(err.response?.status && taskId)) {
+          thunkAPI.dispatch({
+            type: 'tasks/add',
+            payload: {
+              id: nanoid(),
+              type: 'auth/login',
+              payload: {email, password, site}
+            }
+          })
+          return thunkAPI.rejectWithValue({})
+        }
         thunkAPI.dispatch({
           type: 'auth/logout'
         })
         showFlashMessage({message: err?.response?.data?.message ?? 'Invalid Credentials', type: 'error'})
         return thunkAPI.rejectWithValue({})
       })
+  }
+)
+
+export const autoLogin = createAsyncThunk(
+  'auth/autoLogin',
+  (_, thunkAPI) => {
+    const {email, password, site} = thunkAPI.getState().auth;
+    thunkAPI.dispatch(login({email, password, site}))
   }
 )
 

@@ -6,6 +6,7 @@ import {asset, location} from "../api/schemas";
 import _ from "lodash";
 import {getLocations} from "./locationsSlice";
 import thunk from "redux-thunk";
+import {nanoid} from "nanoid/non-secure";
 
 export const getAssets = createAsyncThunk(
   'assets/getAssets',
@@ -19,10 +20,33 @@ export const getAssets = createAsyncThunk(
 
 export const updateAsset = createAsyncThunk(
   'assets/updateAsset',
-  ({assetId, typeName, comment, imageName}, thunkAPI) => axios.put(`assets/${assetId}`, {typeName, comment, imageName})
+  ({assetId, typeName, comment, imageName, taskId=undefined}, thunkAPI) => axios.put(`assets/${assetId}`, {typeName, comment, imageName})
     .then(res=>{
       const {entities, result} = normalize(res.data, asset)
+
+      if(taskId){
+        thunkAPI.dispatch({
+          type:'tasks/remove',
+          payload:taskId
+        })
+      }
+
+
       return thunkAPI.fulfillWithValue({assets: entities.assets})
+
+    }).catch(err=>{
+      if (!(err.response?.status && taskId)) {
+        thunkAPI.dispatch({
+          type: 'tasks/add',
+          payload: {
+            id: nanoid(),
+            type: 'assets/getAssets',
+            payload: {assetId, typeName, comment, imageName}
+          }
+        })
+        return thunkAPI.rejectWithValue({})
+      }
+
     })
 )
 

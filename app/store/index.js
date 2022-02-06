@@ -6,6 +6,7 @@ import assetTypes from './assetTypesSlice'
 import assets from './assetsSlice'
 import systems from './systemsSlice'
 import locations from './locationsSlice'
+import tasks from './tasksSlice'
 
 const middlewares = []
 
@@ -21,6 +22,7 @@ const createReducer = asyncReducers => (state, action) => {
     assetTypes,
     systems,
     assets,
+    tasks,
     locations,
     ...asyncReducers
   });

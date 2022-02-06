@@ -4,3 +4,5 @@ export const system = new schema.Entity('systems')
 export const location = new schema.Entity('locations')
 export const asset = new schema.Entity('assets')
 export const assetType = new schema.Entity('assetTypes')
+
+export const task = new schema.Entity('tasks')

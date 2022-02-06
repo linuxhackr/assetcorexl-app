@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from "./screens/Login";
@@ -14,7 +14,11 @@ import {FontAwesome} from '@expo/vector-icons';
 import {StyleSheet} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import FlashMessage from "react-native-flash-message";
-import {logout} from "./store/authSlice";
+import {autoLogin, login, logout} from "./store/authSlice";
+import * as NetInfo from "@react-native-community/netinfo";
+import {selectLastPendingTask, selectTasks} from "./store/tasksSlice";
+import _ from "lodash";
+import {getAssets, updateAsset} from "./store/assetsSlice";
 
 const HeaderLeft = () => {
   return (
@@ -26,7 +30,11 @@ const HeaderLeft = () => {
 const HeaderRight = () => {
   return (
     <View paddingB={8} style={{height: 64}} center>
-      <Avatar size={40} backgroundColor={'rgba(235,128,52,0.37)'} containerStyle={{marginVertical: 10}} name={'Priyanshu Kumar'} labelColor={'#eb8034'}/>
+      <Avatar size={40}
+              backgroundColor={'rgba(235,128,52,0.37)'}
+              containerStyle={{marginVertical: 10}}
+              name={'Priyanshu Kumar'}
+              labelColor={'#eb8034'}/>
     </View>
   )
 }
@@ -111,7 +119,49 @@ const AuthStackScreen = () => (
 )
 
 const Router = () => {
+  const dispatch = useDispatch()
   const {user} = useSelector(({auth}) => auth)
+  const lastPendingTask = useSelector(selectLastPendingTask)
+  const [isConnected, setIsConnected] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected)
+    });
+    return () => {
+      unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isConnected && lastPendingTask) {
+        if (lastPendingTask.type === 'auth/login') {
+          dispatch(login({...lastPendingTask.payload, taskId: lastPendingTask.id}))
+        } else if (lastPendingTask.type === 'assets/getAssets') {
+          dispatch(updateAsset({...lastPendingTask.payload, taskId: lastPendingTask.id}))
+        }
+    }
+  }, [isConnected, lastPendingTask?.id])
+
+  // trying to login on load [after persisted data fetched.]
+  useEffect(() => {
+    dispatch(autoLogin())
+  }, [])
+
+
+  // execute pending tasks when internet comes
+  // NetInfo.fetch().then((state) => {
+  //   if(state.isConnected) {
+  //     const pendingTasks = useSelector(selectTasks)
+  //     _.forEach(pendingTasks, task=>{
+  //       if(task.type==='auth/login'){
+  //         dispatch(login(task.payload))
+  //       }
+  //     })
+  //   }
+  //
+  // })
+
   return (
     <NavigationContainer>
       <FlashMessage
@@ -122,14 +172,13 @@ const Router = () => {
           justifyContent: 'center'
         }}
         icon='auto' titleStyle={{fontSize: 16}} position='top'/>
-      {user===null ? <AuthStackScreen/>:<CoreStackScreen/>}
+      {user === null ? <AuthStackScreen/> : <CoreStackScreen/>}
+      <View backgroundColor={isConnected ? '#0077cc' : '#ff4646'} height={5}/>
     </NavigationContainer>
   )
 }
 
 export default Router;
-
-
 
 
 /*

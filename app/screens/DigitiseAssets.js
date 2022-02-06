@@ -65,6 +65,7 @@ const DigitiseAssets = () => {
     if(asset) {
       const assetObj = store.getState().assets.byId[asset.value]
       const ast = assetTypes[_.findIndex(assetTypes, item=>item.name===assetObj.type)]
+      console.log(assetObj, ast)
       setAssetType(ast?.id)
       setComment(assetObj.comments)
 
@@ -84,7 +85,6 @@ const DigitiseAssets = () => {
     }
   }, [asset])
 
-  console.log(parameters)
 
 
 
