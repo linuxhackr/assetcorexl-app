@@ -69,7 +69,7 @@ const DigitiseAssets = () => {
       setAssetType(ast?.id)
       setComment(assetObj.comments)
 
-      const params = []
+      let params = []
       _.forEach(assetObj.parameters, item=>{
         setParameters(params.concat({
           'label':item.name,

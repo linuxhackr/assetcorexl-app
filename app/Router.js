@@ -185,8 +185,6 @@ export default Router;
 * todo
 *
 * 1. parameters update
-* 2. if OFFLINE send updateAsset to queue AWA update the redux.
-* 3. in ONLINE pick tasks from queue & fetch.
 * 4. image uploading
 * 6. login BG image
 *

@@ -11,14 +11,9 @@ const Dashboard = () => {
   const numTasks = useSelector(selectNumTasks)
   const tasks = useSelector(selectTasks)
   return (
-    <ScrollView center padding={24}>
+    <ScrollView row center padding={24}>
       <Text style={{fontSize:16, color:"rgba(0,0,0,0.37)"}}>Hi, {user.fname} {user.lname} {numTasks}</Text>
       <Button onPress={()=>dispatch(logout())} label='Log out' outline size={"xSmall"}/>
-      <Button onPress={()=>dispatch(autoLogin())} label='autologin' outline size={"xSmall"}/>
-      <Button onPress={()=>dispatch({
-        type:'tasks/remove',
-        payload:'XRik1hqzLxQLEEMYHFjCl'
-      })} label='remove' outline size={"xSmall"}/>
       {_.compact(tasks).map(task=>(
         <Text>{task.id} {task.type}</Text>
       ))}

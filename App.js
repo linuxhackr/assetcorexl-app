@@ -18,8 +18,8 @@ Assets.loadAssetsGroup('images', {
   name_logo: require('./assets/AssetLogo.jpg'),
 });
 
-// const API_BASE_URL = "https://assetcorexl-api.flashbit.in/"
-const API_BASE_URL = "http://192.168.1.3:8000"
+const API_BASE_URL = "https://assetcorexl-api.flashbit.in/"
+// const API_BASE_URL = "http://192.168.1.3:8000"
 axios.defaults.baseURL = API_BASE_URL;
 
 const App = () => {

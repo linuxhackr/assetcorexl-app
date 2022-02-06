@@ -76,9 +76,13 @@ const Login = ({navigation}) => {
   };
 
   return (
-      <View col padding-16 margin-16 backgroundColor={'#fff'}>
-
-        <Text text30>Login</Text>
+    <ImageBackground source={require('../../assets/login-background.jpeg')} style={{
+      flex: 1,
+      // height:'100%',
+      // top:-300,
+    }}>
+    <View margin-16 padding-16 backgroundColor={'#fff'} borderRadius={8} borderWidth={1} borderColor={COLOR_MAIN}>
+        <Text text40>Login</Text>
         <TextField
           label="Username"
           labelColor={{default: COLOR_MAIN}}
@@ -135,7 +139,9 @@ const Login = ({navigation}) => {
           </View>
         )}
         <Button disabled={!(email && password && site)} onPress={handleLogin} label='Log In' backgroundColor={COLOR_MAIN} marginT-10/>
-      </View>
+    </View>
+</ImageBackground>
+
   )
 }
 
