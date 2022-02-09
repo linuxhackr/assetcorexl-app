@@ -43,7 +43,7 @@ const Login = ({navigation}) => {
 
   useEffect(()=>{
     if(sites.length>0){
-      setSite(sites[0].id)
+      setSite({value:sites[0].id, label:sites[0].name})
     } else {
       setSite(null)
     }
@@ -60,7 +60,7 @@ const Login = ({navigation}) => {
 
   const handleLogin = () => {
     setLoading(true)
-    dispatch(login({email,password,site:site}))
+    dispatch(login({email,password,site:site.value}))
       .then(res=>{
         setLoading(false)
       })
@@ -148,7 +148,7 @@ const Login = ({navigation}) => {
             onChange={setSite}
           >
               {sites.map(site=>(
-                <Picker.Item label={site.name} value={site.id}/>
+                <Picker.Item key={site.id} label={site.name} value={site.id}/>
               ))}
           </Picker>
           </View>

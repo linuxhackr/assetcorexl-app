@@ -65,7 +65,9 @@ const DigitiseAssets = () => {
     if(asset) {
       const assetObj = store.getState().assets.byId[asset.value]
       const ast = assetTypes[_.findIndex(assetTypes, item=>item.name===assetObj.type)]
-      setAssetType(ast?.id)
+      if (ast) {
+        setAssetType({value: ast?.id, label:ast.description})
+      }
       setComment(assetObj.comments)
 
       let params = []
@@ -90,7 +92,7 @@ const DigitiseAssets = () => {
 
   const handleUpdate = () => {
     setLoading(true)
-    dispatch(updateAsset({assetId:asset.value, comment, typeName:store.getState().assetTypes?.byId?.[assetType]?.name}))
+    dispatch(updateAsset({assetId:asset.value, comment, typeName:store.getState().assetTypes?.byId?.[assetType.value]?.name}))
       .then(Res=>{
         setLoading(false)
       })
