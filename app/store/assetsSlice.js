@@ -4,10 +4,9 @@ import axios from "axios";
 import {denormalize, normalize} from "normalizr";
 import {asset, location} from "../api/schemas";
 import _ from "lodash";
-import {getLocations} from "./locationsSlice";
-import thunk from "redux-thunk";
 import {nanoid} from "nanoid/non-secure";
 import {showFlashMessage} from "../api/helper";
+import * as FileSystem from 'expo-file-system';
 
 export const getAssets = createAsyncThunk(
   'assets/getAssets',
@@ -21,37 +20,80 @@ export const getAssets = createAsyncThunk(
 
 export const updateAsset = createAsyncThunk(
   'assets/updateAsset',
-  ({assetId, typeName, comment, imageName, taskId=undefined}, thunkAPI) => axios.put(`assets/${assetId}`, {typeName, comment, imageName})
-    .then(res=>{
-      const {entities, result} = normalize(res.data, asset)
+  async ({
+           assetId,
+           typeName,
+           comment,
+           imageURL,
+           parameters,
+           taskId = undefined,
+           showMessage = false
+         }, thunkAPI) => {
 
-      if(taskId){
-        thunkAPI.dispatch({
-          type:'tasks/remove',
-          payload:taskId
-        })
-      } else {
-        showFlashMessage({message: `Asset ${entities.assets[assetId].name} updated`, type: 'success'})
-      }
+    // CONVERTING image url to data for sending on server.
+    let imageData = null
+    if (imageURL) {
+      imageData = await FileSystem.readAsStringAsync(imageURL, {encoding:FileSystem.EncodingType.Base64})
+      imageData = "data:image/png;base64,"  + imageData
+    }
+    console.log("IMAGE_URL", imageURL)
+    console.log("IMAGE_DATA", imageData)
 
-      return thunkAPI.fulfillWithValue({assets: entities.assets})
+    return axios.put(`assets/${assetId}`, {typeName, comment, parameters, imageData})
+      .then(async res => {
+        let assetx = res.data
+        const image = assetx.imageData;
+        if (image) {
+          // saving image data to cache.
+          const filename = FileSystem.cacheDirectory + "Asset_" + assetId + ".png";
+          await FileSystem.writeAsStringAsync(filename, image.replace("data:image/png;base64,", ""), {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          assetx.imageURL = filename
+        }
+        const {entities, result} = normalize(_.omit(assetx, 'imageData'), asset)
 
-    }).catch(err=>{
-      if (!(err.response?.status && taskId)) {
-        thunkAPI.dispatch({
-          type: 'tasks/add',
-          payload: {
-            id: nanoid(),
-            type: 'assets/updateAsset',
-            payload: {assetId, typeName, comment, imageName}
+        console.log("RES", entities)
+
+        if (taskId) {
+          thunkAPI.dispatch({
+            type: 'tasks/remove',
+            payload: taskId
+          })
+        } else {
+          showMessage && showFlashMessage({message: `Asset ${entities.assets[assetId].name} updated`, type: 'success'})
+        }
+
+        return thunkAPI.fulfillWithValue({assets: entities.assets})
+
+      }).catch(async err => {
+        console.log("ERROR", err)
+        if(!taskId) {
+          if (!(err.response?.status)) {
+            thunkAPI.dispatch({
+              type: 'tasks/add',
+              payload: {
+                id: nanoid(),
+                type: 'assets/updateAsset',
+                payload: {assetId, typeName, comment, imageURL, showMessage}
+              }
+            })
+            showMessage && showFlashMessage({message: `No internet, Added to queue!`, type: 'info'})
+
+            return thunkAPI.rejectWithValue({})
+          } else {
+            thunkAPI.dispatch({
+              type: 'tasks/remove',
+              payload: taskId
+            })
+            showMessage && showFlashMessage({message: `Error: updating db.`, type: 'error'})
+
           }
-        })
-        showFlashMessage({message: `No internet, Added to queue!`, type: 'info'})
+        }
+        throw Error
 
-        return thunkAPI.rejectWithValue({})
-      }
-
-    })
+      })
+  }
 )
 
 const initialState = {
@@ -75,10 +117,10 @@ const assetsSlice = createSlice({
         ids: assetIds
       }
     },
-    [updateAsset.fulfilled]:(state, action) => {
+    [updateAsset.fulfilled]: (state, action) => {
       const {assets} = action.payload;
       state.byId = _.merge(state.byId, assets);
-    }
+    },
   }
 })
 
@@ -89,3 +131,10 @@ export const selectAssets = createSelector(
   ({assets}, systemId) => assets.locations?.[systemId]?.ids ?? [],
   (assets, assetIds) => denormalize(assetIds, [asset], {assets})
 )
+
+
+/*
+*
+* todo save captured image into cache & pass as imageURL.
+*
+* */

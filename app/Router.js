@@ -53,8 +53,8 @@ const BottomTabScreen = () => (
       tabBarStyle: {
         elevation: 0,
         zIndex: 1,
-        padding: 12,
-        height: 72,
+        padding: 8,
+        height: 64,
         backgroundColor: '#eb8034'
       },
       tabBarLabelStyle: {
@@ -152,7 +152,6 @@ const Router = () => {
   return (
     <NavigationContainer ref={navigationRef}>
       {user === null ? <AuthStackScreen/> : <CoreStackScreen/>}
-      <View backgroundColor={isConnected ? '#0ab600' : '#ff1f5a'} height={2}/>
       <FlashMessage
         style={{
           margin: 0,

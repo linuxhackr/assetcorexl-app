@@ -14,6 +14,8 @@ const Dashboard = () => {
   const tasks = useSelector(selectTasks)
   const {site} = useSelector(({auth}) => auth)
 
+  const pendingTasks = useSelector(selectNumTasks)
+
   useEffect(
     ()=>{
       dispatch(getAssetTypes())

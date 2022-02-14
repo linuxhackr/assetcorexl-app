@@ -60,7 +60,7 @@ const Login = ({navigation}) => {
 
   const handleLogin = () => {
     setLoading(true)
-    dispatch(login({email,password,site:site.value}))
+    dispatch(login({email,password,site:site.value, showMessage:true}))
       .then(res=>{
         setLoading(false)
       })
@@ -122,6 +122,7 @@ const Login = ({navigation}) => {
           labelColor={{default: COLOR_MAIN}}
           placeholder="Enter password"
           validateOnChange
+          secureTextEntry={true}
           labelStyle={{
             fontWeight: 'bold'
           }}

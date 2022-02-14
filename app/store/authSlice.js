@@ -7,7 +7,7 @@ import {nanoid} from "nanoid/non-secure";
 
 export const login = createAsyncThunk(
   'auth/login',
-  ({email, password, site, taskId=undefined}, thunkAPI) => {
+  ({email, password, site, taskId=undefined, showMessage}, thunkAPI) => {
     return axios.post('login', {email, password, site})
       .then(({data}) => {
         const {user} = data
@@ -17,7 +17,7 @@ export const login = createAsyncThunk(
             payload:taskId
           })
         }
-        showFlashMessage({message: 'Login Success', type: 'success'})
+        showMessage&&showFlashMessage({message: 'Login Success', type: 'success'})
 
         return thunkAPI.fulfillWithValue({user})
       })
@@ -37,7 +37,7 @@ export const login = createAsyncThunk(
         thunkAPI.dispatch({
           type: 'auth/logout'
         })
-        showFlashMessage({message: err?.response?.data?.message ?? 'Invalid Credentials', type: 'error'})
+        showMessage&&showFlashMessage({message: err?.response?.data?.message ?? 'Invalid Credentials', type: 'error'})
         return thunkAPI.rejectWithValue({})
       })
   }
