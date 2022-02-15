@@ -1,12 +1,9 @@
 import React, {useEffect, useState} from 'react'
-import {StyleSheet, ListRenderItem, Keyboard, Platform} from 'react-native'
+import {StyleSheet} from 'react-native'
 import {
-  Dialog,
   Picker,
   View,
   Colors,
-  Text,
-  PanningProvider,
   Incubator,
   Button,
   LoaderScreen,
@@ -23,6 +20,7 @@ import store from "../store";
 import {selectAssetTypes} from "../store/assetTypesSlice";
 import {getAssets, selectAssets, updateAsset} from "../store/assetsSlice";
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const {TextField} = Incubator;
 
@@ -63,16 +61,24 @@ const DigitiseAssets = () => {
   const pickImage = async () => {
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
       quality: 0.7,
+      base64: false,
     });
 
     if (result?.uri) {
       setLoading(true)
 
+      // Compressing the image.
+      const manipResult = await ImageManipulator.manipulateAsync(
+        result.uri,
+        [{resize: {width: 500}}],
+        {compress: .6, format: ImageManipulator.SaveFormat.JPEG}
+      )
+
+
       dispatch(updateAsset({
         assetId: asset.value,
-        imageURL: result.uri,
+        imageURL: manipResult.uri,
         showMessage: true
       }))
         .then(res => {
@@ -132,7 +138,7 @@ const DigitiseAssets = () => {
 
   useEffect(() => {
     onAssetChange();
-    if(asset) {
+    if (asset) {
       setLoading(true)
       dispatch(updateAsset({
         assetId: asset.value,

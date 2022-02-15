@@ -33,27 +33,22 @@ export const updateAsset = createAsyncThunk(
     // CONVERTING image url to data for sending on server.
     let imageData = null
     if (imageURL) {
-      imageData = await FileSystem.readAsStringAsync(imageURL, {encoding:FileSystem.EncodingType.Base64})
-      imageData = "data:image/png;base64,"  + imageData
+      imageData = await FileSystem.readAsStringAsync(imageURL, {encoding: FileSystem.EncodingType.Base64})
+      imageData = "data:image/png;base64," + imageData
     }
-    console.log("IMAGE_URL", imageURL)
-    console.log("IMAGE_DATA", imageData)
-
     return axios.put(`assets/${assetId}`, {typeName, comment, parameters, imageData})
       .then(async res => {
         let assetx = res.data
         const image = assetx.imageData;
         if (image) {
           // saving image data to cache.
-          const filename = FileSystem.cacheDirectory + "Asset_" + assetId + ".png";
+          const filename = FileSystem.cacheDirectory + "Asset_" + assetId + (new Date()).getMilliseconds() + ".png";
           await FileSystem.writeAsStringAsync(filename, image.replace("data:image/png;base64,", ""), {
             encoding: FileSystem.EncodingType.Base64,
           });
           assetx.imageURL = filename
         }
         const {entities, result} = normalize(_.omit(assetx, 'imageData'), asset)
-
-        console.log("RES", entities)
 
         if (taskId) {
           thunkAPI.dispatch({
@@ -68,8 +63,8 @@ export const updateAsset = createAsyncThunk(
 
       }).catch(async err => {
         console.log("ERROR", err)
-        if(!taskId) {
-          if (!(err.response?.status)) {
+        if (!(err.response?.status)) {
+          if (!taskId) {
             thunkAPI.dispatch({
               type: 'tasks/add',
               payload: {
@@ -81,14 +76,16 @@ export const updateAsset = createAsyncThunk(
             showMessage && showFlashMessage({message: `No internet, Added to queue!`, type: 'info'})
 
             return thunkAPI.rejectWithValue({})
-          } else {
+          }
+        } else {
+          if (taskId) {
             thunkAPI.dispatch({
               type: 'tasks/remove',
               payload: taskId
             })
             showMessage && showFlashMessage({message: `Error: updating db.`, type: 'error'})
-
           }
+
         }
         throw Error
 
@@ -121,6 +118,21 @@ const assetsSlice = createSlice({
       const {assets} = action.payload;
       state.byId = _.merge(state.byId, assets);
     },
+    [updateAsset.rejected]:(state,action) => {
+      const {assetId,
+        typeName,
+        comment,
+        imageURL,
+        parameters,} = action.meta.arg;
+      if(state.byId?.[assetId]){
+        state.byId[assetId] = _.merge(state.byId[assetId], {
+          comments:comment,
+          type:typeName,
+          imageURL,
+          parameters
+        })
+      }
+    }
   }
 })
 
