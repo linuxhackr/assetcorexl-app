@@ -7,7 +7,9 @@ import {
   Incubator,
   Button,
   LoaderScreen,
-  Image
+  Image,
+  Text,
+  Modal
 } from 'react-native-ui-lib'
 import {MaterialTabBar, Tabs} from 'react-native-collapsible-tab-view'
 
@@ -19,14 +21,15 @@ import {getLocations, selectLocations} from "../store/locationsSlice";
 import store from "../store";
 import {selectAssetTypes} from "../store/assetTypesSlice";
 import {getAssets, selectAssets, updateAsset} from "../store/assetsSlice";
-import * as ImagePicker from 'expo-image-picker';
+// import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import Camera from "./Camera";
 
 const {TextField} = Incubator;
 
 const COLOR_MAIN = "#eb8034"
 
-const DigitiseAssets = () => {
+const DigitiseAssets = ({navigation}) => {
   const dispatch = useDispatch()
   const assetTypes = useSelector(selectAssetTypes)
   const {site} = useSelector(({auth}) => auth)
@@ -47,49 +50,72 @@ const DigitiseAssets = () => {
 
   const [loading, setLoading] = useState(false)
 
+  const [camActive, setCamActive] = useState(false)
+  const [capturedImage, setCapturedImage] = useState(false)
 
-  useEffect(() => {
-    (async () => {
-      const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-      }
 
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       alert('Sorry, we need camera roll permissions to make this work!');
+  //     }
+  //
+  //   })();
+  // }, []);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-      base64: false,
-    });
+  // const pickImage = async () => {
+  //   setCamActive(true)
+  //   return
+  //   let result = await ImagePicker.launchCameraAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     quality: 0.7,
+  //     base64: false,
+  //   });
+  //
+  //   if (result?.uri) {
+  //     setLoading(true)
+  //
+  //     // Compressing the image.
+  //     const manipResult = await ImageManipulator.manipulateAsync(
+  //       result.uri,
+  //       [{resize: {width: 500}}],
+  //       {compress: .6, format: ImageManipulator.SaveFormat.JPEG}
+  //     )
+  //
+  //
+  //     dispatch(updateAsset({
+  //       assetId: asset.value,
+  //       imageURL: manipResult.uri,
+  //       showMessage: true
+  //     }))
+  //       .then(res => {
+  //         setLoading(false)
+  //         onAssetChange()
+  //       })
+  //   } else {
+  //     console.log('no image selected')
+  //   }
+  //
+  // };
 
-    if (result?.uri) {
+
+
+  useEffect(()=>{
+    if(capturedImage) {
       setLoading(true)
-
-      // Compressing the image.
-      const manipResult = await ImageManipulator.manipulateAsync(
-        result.uri,
-        [{resize: {width: 500}}],
-        {compress: .6, format: ImageManipulator.SaveFormat.JPEG}
-      )
-
-
       dispatch(updateAsset({
         assetId: asset.value,
-        imageURL: manipResult.uri,
+        imageURL: capturedImage,
         showMessage: true
       }))
         .then(res => {
           setLoading(false)
           onAssetChange()
         })
-    } else {
-      console.log('no image selected')
     }
 
-  };
+  }, [capturedImage])
 
   useEffect(() => {
     if (system) {
@@ -262,7 +288,7 @@ const DigitiseAssets = () => {
                     }}
                     paddingH-10>
                 <Button
-                  onPress={pickImage}
+                  onPress={()=>setCamActive(true)}
                   label='Add Photo' outline size={"small"} outlineColor={COLOR_MAIN}/>
                 {image &&
                 <Image source={{uri: image}}
@@ -307,6 +333,11 @@ const DigitiseAssets = () => {
       </Tabs.Container>
       {loading &&
       <LoaderScreen color={COLOR_MAIN} message="Loading..." overlay backgroundColor={"rgba(255,255,255,0.6)"}/>}
+
+
+      <Modal visible={camActive} onC onBackgroundPress={() => console.log('background pressed')}>
+        <Camera setCamActive={setCamActive} setCapturedImage={setCapturedImage}/>
+      </Modal>
 
     </View>
   )
